@@ -56,6 +56,10 @@
                     <artifactId>kotlin-maven-plugin</artifactId>
                     <version>${kotlin.version}</version>
 
+                    <configuration>
+                        <jvmTarget>11</jvmTarget>
+                    </configuration>
+
                     <executions>
                         <execution>
                             <id>compile</id>

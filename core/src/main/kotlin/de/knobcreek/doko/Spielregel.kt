@@ -4,11 +4,12 @@ package de.knobcreek.doko
  * Interessanterweise sind die Spielregeln unabhängig davon, ob ein Solo
  * gespielt wird oder nicht.  Die "Standard-Spielregel" ist KARO.
  */
-enum class Spielregel(val istTrumpf: (farbe: Farbe, wert: Wert) -> Boolean,
-                      val trumpfHöhe: (farbe: Farbe, wert: Wert) -> Int) {
+enum class Spielregel(val istTrumpf: (Karte) -> Boolean,
+                      val trumpfHöhe: (Karte) -> Int) {
     REGULÄR(Farbe.KARO),
     HOCHZEIT(Farbe.KARO),
-    FLEISCHLOS({ _, _ -> false }, { _, _ -> 0 }),
+    ARMUT(Farbe.KARO),
+    FLEISCHLOS({ _ -> false }, { _ -> 0 }),
     KARO(Farbe.KARO),
     HERZ(Farbe.HERZ),
     PIK(Farbe.PIK),
@@ -20,28 +21,49 @@ enum class Spielregel(val istTrumpf: (farbe: Farbe, wert: Wert) -> Boolean,
      * Die normalen Spielregeln oder ein Farbsolo
      */
     constructor(trumpfFarbe: Farbe) :
-            this({ farbe, wert -> istTrumpf(trumpfFarbe, farbe, wert) },
-                { farbe, wert -> trumpfHöhe(trumpfFarbe, farbe, wert) })
+            this({ karte -> istTrumpf(trumpfFarbe, karte) },
+                    { karte -> trumpfHöhe(trumpfFarbe, karte) })
 
     /**
      * Damen- oder Bubensolo
      */
     constructor(trumpf: Wert) :
-            this({ _, wert -> wert == trumpf },
-                { farbe, _ -> farbe.ordinal + 10 })
+            this({ karte -> karte.wert == trumpf },
+                    { karte -> karte.farbe.ordinal + 10 })
 }
 
-fun istTrumpf(trumpfFarbe: Farbe, farbe: Farbe, wert: Wert) =
-    farbe == trumpfFarbe || wert == Wert.BUBE || wert == Wert.DAME || herzZehn(farbe, wert)
+fun istTrumpf(trumpfFarbe: Farbe, karte: Karte) =
+        with (karte) {
+            farbe == trumpfFarbe || wert == Wert.BUBE || wert == Wert.DAME || karte == herzZehn
+        }
 
 /**
  * Die Trumpfhöhe ist immer höher als der Wert einer Fehlfarbe.
  */
-fun trumpfHöhe(trumpfFarbe: Farbe, farbe: Farbe, wert: Wert) =
-    when {
-        herzZehn(farbe, wert) -> 99
-        wert == Wert.DAME -> 30 + farbe.ordinal
-        wert == Wert.BUBE -> 20 + farbe.ordinal
-        farbe == trumpfFarbe -> 10 + wert.ordinal
-        else -> 0
-    }
+fun trumpfHöhe(trumpfFarbe: Farbe, karte: Karte) =
+        with (karte) {
+            when {
+                karte == herzZehn -> 99
+                wert == Wert.DAME -> 30 + farbe.ordinal
+                wert == Wert.BUBE -> 20 + farbe.ordinal
+                farbe == trumpfFarbe -> 10 + wert.ordinal
+                else -> 0
+            }
+        }
+
+/**
+ * Die Herz-10 wird nur markiert, wenn die Sonderregel "zweite sticht erste" aktiv ist.
+ */
+data class KartenBewertung(val karte: Karte,
+                           val trumpf: Boolean,
+                           val trumpfHöhe: Int,
+                           val zweiteStichtErste: Boolean) {
+    constructor(karte: Karte, spielregel: Spielregel, zweiteStichtErste: Boolean) :
+            this(karte,
+                    spielregel.istTrumpf(karte),
+                    spielregel.trumpfHöhe(karte),
+                    zweiteStichtErste && karte == herzZehn)
+
+    fun bedient(aufgespielt: KartenBewertung) =
+            if (aufgespielt.trumpf) trumpf else !trumpf && karte.farbe == aufgespielt.karte.farbe
+}

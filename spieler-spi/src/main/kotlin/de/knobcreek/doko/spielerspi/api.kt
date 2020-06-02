@@ -8,25 +8,28 @@ interface SpielerSpi {
 
     //TODO Pflichtsoli, Turnierstand, Rundennummer etc.
     /**
-     * Jeder Spieler wird vor Beginn des eigentlichen Spiels gefragt, ob bzw. welchen Vorbehalt er anmeldet. Die
-     *  anderen Spieler sehen später nur den einen Vorbehalt, der die höchste Priorität hat
+     * Jeder Spieler wird vor Beginn des eigentlichen Spiels gefragt, ob bzw.
+     * welchen Vorbehalt er anmeldet. Die anderen Spieler sehen später nur den
+     * einen Vorbehalt, der die höchste Priorität hat
      */
     fun vorbehalt(variante: RegelVariante, werBinIch: Spieler, ersterAufspieler: Spieler, hand: List<Karte>): Vorbehalt?
 
     /**
-     * Liefert die Aktion eines Spielers auf Basis des aktuellen Spielstandes. Jeder Spieler wird über jede Aktion
-     *  jedes anderen Spielers benachrichtigt, und jeder Spieler muss jeweils eine SpielerAktion zurückgeben
-     *  ('Ack', wenn er nicht am Zug ist).
+     * Liefert die Aktion eines Spielers auf Basis des aktuellen Spielstandes.
+     * Jeder Spieler wird über jede Aktion jedes anderen Spielers
+     * benachrichtigt, und jeder Spieler muss jeweils eine SpielerAktion
+     * zurückgeben ('Ack', wenn er nicht am Zug ist und keine Ansage machen
+     * möchte).
      */
     fun aktion(snapshot: SpielSnapshot): SpielerAktion
 }
 
 
-
 data class RegelVariante(
-        val zweiteStichtErste: Boolean,
         val mitNeunen: Boolean,
-        val soli: List<SoloTyp>
+        val soli: List<SoloTyp>,
+        val zweiteStichtErste: Boolean
+// Schweinchen
 )
 
 enum class Farbe {
@@ -34,15 +37,20 @@ enum class Farbe {
 }
 enum class Wert(val punkte: Int) {
     Neun(0), Zehn(10), Bube(2), Dame(3), König(4), As(11)
+
+enum class Wert {
+    Neun, Bube, Dame, König, Zehn, As
 }
 data class Karte(val farbe: Farbe, val wert: Wert) {
     val punkte = wert.punkte
 }
 
-enum class Spieler(val idx: Int) {
-    Eins(0), Zwei(1), Drei(2), Vier(3);
+data class Karte(val farbe: Farbe, val wert: Wert)
 
-    fun nächster() = Spieler.values()[(idx+1)%4];
+enum class Spieler {
+    Eins, Zwei, Drei, Vier;
+
+    fun nächster() = Spieler.values()[(ordinal + 1)%4];
 }
 
 sealed class Stich {
@@ -60,10 +68,11 @@ data class FertigerStich(
 ): Stich()
 
 enum class SoloTyp {
-    Karo, Herz, Pik, Kreuz,
     Fleischlos,
+    Karo, Herz, Pik, Kreuz,
     Buben, Damen
 }
+
 enum class HochzeitTyp {
     ErsterFremder,
     ErsterFremderTrumpf
@@ -75,7 +84,9 @@ data class HochzeitMit(val spieler: Spieler): HochzeitKlärung()
 
 sealed class Vorbehalt
 data class Solo(val typ: SoloTyp): Vorbehalt()
-// Aus Sicht des Spielers passt es durchaus, die Klärung der Hochzeit (sofern erfolgt) in den Vorbehalt aufzunehmen
+
+// Aus Sicht des Spielers passt es durchaus, die Klärung der Hochzeit (sofern
+// erfolgt) in den Vorbehalt aufzunehmen
 data class Hochzeit(val typ: HochzeitTyp, val klärung: HochzeitKlärung?): Vorbehalt()
 
 enum class AnsageHöhe {
@@ -85,7 +96,7 @@ enum class AnsageHöhe {
 sealed class SpielerAktion
 data class KarteGespielt(val karte: Karte): SpielerAktion()
 data class Re(val höhe: AnsageHöhe): SpielerAktion()
-data class Contra(val höhe: AnsageHöhe): SpielerAktion()
+data class Kontra(val höhe: AnsageHöhe): SpielerAktion()
 object Ack: SpielerAktion() // als explizite Bestätigung, um "höflich" zu spielen - Spieler geben sich gegenseitig Zeit für Ansagen
 
 
@@ -100,7 +111,7 @@ data class SpielSnapshot(
         val vorbehalt: Pair<Spieler, Vorbehalt>?,
 
         val fertigeStiche: List<FertigerStich>,
-        val aktuellerStich: OffenerStich,
+        val aktuellerStich: Stich,
 
         val journal: List<Pair<Spieler, SpielerAktion>>
 )

@@ -19,7 +19,7 @@ internal class SpielTest {
     @ParameterizedTest
     @EnumSource(NeunenParameter::class)
     fun geben(parameter: NeunenParameter) {
-        val spiel = Spiel(spieler, parameter.mitNeuen)
+        val spiel = Spiel(spieler, parameter.mitNeuen, true)
         assertEquals(parameter.anzahl * 2, spiel.alleKarten.size)
         assertEquals(4, spiel.kartenJeSpieler.size)
         assertAll(
@@ -30,7 +30,7 @@ internal class SpielTest {
 
     @Test
     fun keinVorbehalt() {
-        val spiel = Spiel(spieler, false)
+        val spiel = Spiel(spieler, false, true)
         assertAll(
                 spieler.subList(0, 3)
                         .map { sp -> Executable { assertNull(spiel.vorbehalt(Spielregel.REGULÄR, sp)) }}
@@ -53,20 +53,20 @@ internal class SpielTest {
     @ParameterizedTest
     @EnumSource(SpielregelParameter::class)
     fun kartenNeuBewerten(parameter: SpielregelParameter) {
-        val spiel = Spiel(spieler, true)
-        spiel.kartenNeuBewerten(parameter.spielregel)
+        val spiel = Spiel(spieler, true, true)
+        val kartenBewertungen = HashMap<Karte, KartenBewertung>()
+        spiel.kartenBewerten(kartenBewertungen, parameter.spielregel)
 
         assertAll(
-                spiel.kartenJeSpieler.values
-                        .flatten()
-                        .map { karte -> Executable { assertEquals(parameter.trumpf(karte), karte.trumpf) } }
+                kartenBewertungen.values
+                        .map { bewertung -> Executable { assertEquals(parameter.trumpf(bewertung.karte), bewertung.trumpf) } }
         )
     }
 
     @ParameterizedTest
     @ValueSource(ints = [ 0, 1, 2, 3 ])
     fun fleischlos(fleischlosSpieler: Int) {
-        val spiel = Spiel(spieler, false)
+        val spiel = Spiel(spieler, false, true)
         spieler.forEach { sp ->
             val spielregel = if (sp.nummer == fleischlosSpieler)
                 Spielregel.FLEISCHLOS
@@ -78,16 +78,15 @@ internal class SpielTest {
             assertSame(Spielregel.FLEISCHLOS, spielregel)
             assertSame(spieler[fleischlosSpieler], soloSpieler)
             assertAll(
-                    kartenJeSpieler.values
-                            .flatten()
-                            .map { karte -> Executable { assertFalse(karte.trumpf) } }
+                    kartenBewertungen.values
+                            .map { bewertung -> Executable { assertFalse(bewertung.trumpf) } }
             )
         }
     }
 
     @Test
     fun damenSolo() {
-        val spiel = Spiel(spieler, false)
+        val spiel = Spiel(spieler, false, true)
         spiel.vorbehalt(Spielregel.REGULÄR, spieler[0])
         spiel.vorbehalt(Spielregel.BUBEN, spieler[1])
         spiel.vorbehalt(Spielregel.DAMEN, spieler[2])
@@ -99,15 +98,14 @@ internal class SpielTest {
         assertSame(spieler[2], spiel.soloSpieler)
 
         assertAll(
-                spiel.kartenJeSpieler.values
-                        .flatten()
-                        .map { karte -> Executable { assertEquals(karte.wert == Wert.DAME, karte.trumpf) } }
+                spiel.kartenBewertungen.values
+                        .map { bewertung -> Executable { assertEquals(bewertung.karte.wert == Wert.DAME, bewertung.trumpf) } }
         )
     }
 
     @Test
     fun stichSpielen() {
-        val spiel = Spiel(spieler, false)
+        val spiel = Spiel(spieler, false, true)
 
         val spieler = spiel.spieler
         spieler.forEach { sp -> spiel.vorbehalt(Spielregel.REGULÄR, sp) }

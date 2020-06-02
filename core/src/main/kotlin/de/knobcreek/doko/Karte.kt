@@ -18,39 +18,23 @@ enum class Wert(val punkte: Int, val text: String) {
     AS(11, "As");
 }
 
-/**
- * Die Herz-10 wird nur markiert, wenn die Sonderregel "zweite sticht erste" aktiv ist.
- */
 data class Karte(val farbe: Farbe,
-                 val wert: Wert,
-                 val trumpf: Boolean,
-                 val trumpfHöhe: Int,
-                 val herzZehn: Boolean) {
-    constructor(farbe: Farbe, wert: Wert, spielregel: Spielregel, zweiteStichtErste: Boolean) :
-            this(farbe, wert,
-                    spielregel.istTrumpf(farbe, wert),
-                    spielregel.trumpfHöhe(farbe, wert),
-                    zweiteStichtErste && herzZehn(farbe, wert))
-
-    fun bedient(karte: Karte) =
-            if (karte.trumpf) trumpf else !trumpf && farbe == karte.farbe
-
+                 val wert: Wert) {
     override fun toString() =
             farbe.text + wert.text
 }
 
-fun herzZehn(farbe: Farbe, wert: Wert) =
-        farbe == Farbe.HERZ && wert == Wert.ZEHN
-
-val reDame = Karte(Farbe.KREUZ, Wert.DAME, true, trumpfHöhe(Farbe.KARO, Farbe.KREUZ, Wert.DAME), false)
+val herzZehn = Karte(Farbe.HERZ, Wert.ZEHN)
+val fuchs = Karte(Farbe.KARO, Wert.AS)
+val reDame = Karte(Farbe.KREUZ, Wert.DAME)
 
 /**
- * Erzeugen eines einfachen Kartensatzes mit der angegebenen Spielregel
+ * Erzeugen eines einfachen Kartensatzes
  */
-fun erzeugeKarten(spielregel: Spielregel, mitNeunen: Boolean, zweiteStichtErste: Boolean) =
+fun erzeugeKarten(mitNeunen: Boolean) =
         Farbe.values()
                 .flatMap { farbe ->
                     Wert.values()
                             .filter { wert -> mitNeunen || wert != Wert.NEUN }
-                            .map { wert -> Karte(farbe, wert, spielregel, zweiteStichtErste) }
+                            .map { wert -> Karte(farbe, wert) }
                 }

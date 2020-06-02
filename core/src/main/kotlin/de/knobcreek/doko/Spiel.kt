@@ -18,11 +18,12 @@ enum class Ansage(val erlaubtBis: Int,
             this(erlaubtBis, Partei.values(), grenze, 1)
 }
 
-class Spiel(val spieler: List<Spieler>, val mitNeunen: Boolean) {
+class Spiel(val spieler: List<Spieler>, val mitNeunen: Boolean, val zweiteStichtErste: Boolean) {
     val uuid: UUID = UUID.randomUUID()
     val random = Random()
     // einfacher Satz, wird nur zum Geben verwendet
-    val alleKarten = erzeugeKarten(Spielregel.REGULÄR, mitNeunen, true)
+    val alleKarten = erzeugeKarten(mitNeunen)
+    val kartenBewertungen = HashMap<Karte, KartenBewertung>()
     val kartenJeSpieler = geben()
     val vorbehalte = HashMap<Spieler, Spielregel>()
 
@@ -51,11 +52,8 @@ class Spiel(val spieler: List<Spieler>, val mitNeunen: Boolean) {
             with (vorbehalte.entries
                     .maxBy { entry -> entry.value }!!) {
                 spielStatusNachVorbehalten(key, value)
-                if (value !in listOf(Spielregel.REGULÄR, Spielregel.HOCHZEIT)) {
+                if (value !in listOf(Spielregel.REGULÄR, Spielregel.HOCHZEIT))
                     soloSpieler = key
-                    if (value != Spielregel.KARO)
-                        kartenNeuBewerten(value)
-                }
                 Pair(key, value)
             }
         } else null
@@ -69,6 +67,7 @@ class Spiel(val spieler: List<Spieler>, val mitNeunen: Boolean) {
         else
             spieler
                     .associateWith { sp -> partei(sp, soloSpieler) }
+        kartenBewerten(kartenBewertungen, spielregel)
     }
 
     fun partei(karten: List<Karte>) =
@@ -77,26 +76,23 @@ class Spiel(val spieler: List<Spieler>, val mitNeunen: Boolean) {
     fun partei(sp: Spieler, soloSpieler: Spieler) =
             SpielStatus(if (sp == soloSpieler) Partei.RE else Partei.KONTRA)
 
-    fun kartenNeuBewerten(spielregel: Spielregel) =
-            kartenJeSpieler.values
-                    .forEach { karten ->
-                        karten.replaceAll {
-                            karte -> Karte(karte.farbe, karte.wert, spielregel, true)
-                        }
-                    }
+    fun kartenBewerten(kartenBewertungen: HashMap<Karte, KartenBewertung>, spielregel: Spielregel) =
+            alleKarten
+                    .associateWithTo(kartenBewertungen) { karte -> KartenBewertung(karte, spielregel, zweiteStichtErste) }
 
     fun spielen(karte: Karte, spieler: Spieler) {
         val karten = kartenJeSpieler[spieler] ?: throw NichtErlaubtException("ungültiger Spieler")
+        val bewertung = kartenBewertungen.getValue(karte)
 
         val stich = aktuellerStich
         if (stich == null)
-            aktuellerStich = Stich(stiche.size, karte, spieler)
+            aktuellerStich = Stich(stiche.size, bewertung, spieler)
         else {
             if (!stich.darfSpielen(spieler))
                 throw NichtErlaubtException("nicht an der Reihe")
-            if (!stich.darfSpielen(karte, karten))
+            if (!stich.darfSpielen(karte, karten, kartenBewertungen))
                 throw NichtErlaubtException("ungültige Karte")
-            val aktuellerStich = stich.nächsteKarte(karte, spieler)
+            val aktuellerStich = stich.nächsteKarte(bewertung, spieler)
             if (aktuellerStich.gespielt()) {
                 stiche.add(aktuellerStich)
                 this.aktuellerStich = null
