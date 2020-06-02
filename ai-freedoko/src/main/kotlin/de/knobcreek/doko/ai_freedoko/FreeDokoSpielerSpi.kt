@@ -16,3 +16,8 @@ class FreeDokoSpielerSpi: SpielerSpi {
         TODO("Not yet implemented")
     }
 }
+
+object AiConfig {
+    val trump_card_limit = Karte(Farbe.Herz, Wert.Dame)     //TODO Ai::trump_card_limit --> abhängig vom Solo etc
+
+}

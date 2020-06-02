@@ -32,10 +32,12 @@ data class RegelVariante(
 enum class Farbe {
     Kreuz, Pik, Herz, Karo
 }
-enum class Wert {
-    Neun, Zehn, Bube, Dame, König, As
+enum class Wert(val punkte: Int) {
+    Neun(0), Zehn(10), Bube(2), Dame(3), König(4), As(11)
 }
-data class Karte(val farbe: Farbe, val wert: Wert)
+data class Karte(val farbe: Farbe, val wert: Wert) {
+    val punkte = wert.punkte
+}
 
 enum class Spieler(val idx: Int) {
     Eins(0), Zwei(1), Drei(2), Vier(3);

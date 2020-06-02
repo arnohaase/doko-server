@@ -6,74 +6,117 @@ import de.knobcreek.doko.spielerspi.*
  * @author arno
  */
 
+class SpielContext(val spielSnapshot: SpielSnapshot) {
+    val regel: Spielregel by lazy {
+        if (spielSnapshot.vorbehalt == null) {
+            Spielregel.create(spielSnapshot.variante, null)
+        }
+        else {
+            Spielregel.create(spielSnapshot.variante, spielSnapshot.vorbehalt!!.second)
+        }
+    }
+
+    val werBinIch = spielSnapshot.werBinIch
+    val meineHand by lazy { KartenSet(spielSnapshot.hand) }
+
+    val alleAußerMir = Spieler.values().filterNot { it == werBinIch }
+
+
+    val alleKarten: KartenSet by lazy {
+        TODO()
+    }
+
+    val farben = regel.farben()
+    val fehlFarben = farben.filterNot { it.trumpf }
+
+    val alleKartenJeFarbe: Map<SpielFarbe, KartenSet> by lazy {
+        val result = HashMap<SpielFarbe, KartenSet>()
+        for (farbe in regel.farben()) {
+            result.put(farbe, alleKarten.filter { it.spielFarbe() == farbe })
+        }
+        result
+    }
+
+    val alleGespieltenKarten: KartenSet by lazy {
+        spielSnapshot.fertigeStiche
+                .fold(KartenSet.empty, { acc, stich -> acc + stich.karten }) +
+                spielSnapshot.aktuellerStich.karten
+    }
+
+    val gespielteKarten: Map<Spieler, KartenSet> by lazy {
+        TODO()
+    }
+
+    val alleUngespieltenKarten: KartenSet by lazy {
+        alleKarten - alleUngespieltenKarten
+    }
+
+    companion object Access {
+        operator fun invoke(): SpielContext = threadLocal.get()
+
+        fun executeInContext(spielSnapshot: SpielSnapshot, code: () -> Unit) {
+            threadLocal.set(SpielContext(spielSnapshot))
+            try {
+                code()
+            }
+            finally {
+                threadLocal.remove()
+            }
+        }
+
+        private val threadLocal = ThreadLocal<SpielContext>()
+    }
+}
+
+val HerzZehn = Karte(Farbe.Herz, Wert.Zehn)
+val KaroAs = Karte(Farbe.Karo, Wert.As)
 val KreuzDame = Karte(Farbe.Kreuz, Wert.Dame)
 
 
 fun Spielregel.hatTrumpf() = this.farben().any { f -> f.trumpf }
-fun Spielregel.bedienendeKarten(farbe: SpielFarbe, karten: Iterable<Karte>): KartenSet =
-        KartenSet(karten.filter { k -> farbe(k) == farbe })
-fun Spielregel.isZweiteKarteHöher(erste: Karte, zweite: Karte): Boolean =
-    if(farbe(erste) == farbe(zweite)) {
-        isZweiteKarteHöherRaw(erste, zweite)
-    }
-    else {
-        farbe(zweite).trumpf
-    }
 
-fun Spielregel.höchsteKarte(karten: KartenSet): Karte? = when(karten.size()) {
-    0 -> null
-    else -> {
-        var candidate = karten.iterator().next()
+fun bedienendeKarten(farbe: SpielFarbe, karten: Iterable<Karte>): KartenSet =
+        KartenSet(karten.filter { k -> SpielContext().regel.farbe(k) == farbe })
 
-        for (karte in karten) {
-            if (isZweiteKarteHöher(candidate, karte)) {
-                candidate = karte
-            }
+fun Karte.isHöherAls(zweite: Karte): Boolean =
+        if(spielFarbe() == zweite.spielFarbe()) {
+            SpielContext().regel.isZweiteKarteHöherRaw(zweite, this)
+        }
+        else {
+            spielFarbe().trumpf
         }
 
-        candidate
-    }
-}
+fun Karte.spielFarbe() = SpielContext().regel.farbe(this)
+fun Karte.isTrumpf() = spielFarbe() == SpielFarbe.Trumpf
 
+fun Karte.isSpeziell() = this == HerzZehn //TODO oder Schweinchen oder mögliches Schweinchen oder Hyperschweinchen oder mögliches Hyperschweinchen
 
 fun FertigerStich.karteVon(spieler: Spieler): Karte = karten[(spieler.idx - aufspiel.idx + 4) % 4]
 
-fun Stich.hatNichtBedient(spieler: Spieler, spielregel: Spielregel): Boolean =
-        //NB: Für offene Stiche ist das *nicht* das Gleiche wie !Stich.hatBedient()!
-        if (this is FertigerStich) {
-            spielregel.farbe(karteVon(spieler)) != spielregel.farbe(karten[0])
-        }
-        else {
-            val idx = (spieler.idx - aufspiel.idx + 4) % 4
-            if (idx < karten.size) {
-                spielregel.farbe(karten[idx]) != spielregel.farbe(karten[0])
-            }
-            else {
-                false
-            }
-        }
-
-
-fun SpielSnapshot.spielregel(): Spielregel = TODO()
-
-fun SpielSnapshot.meineHand() = KartenSet(hand)
-
-fun SpielSnapshot.farbe(stich: Stich): SpielFarbe? =
-        if (stich.karten.isNotEmpty()) {
-            spielregel().farbe(stich.karten[0])
+fun Stich.farbe(): SpielFarbe? =
+        if (karten.isNotEmpty()) {
+            karten[0].spielFarbe()
         }
         else {
             null
         }
 
-fun SpielSnapshot.alleKarten(): KartenSet = TODO()
+fun Stich.hatNichtBedient(spieler: Spieler): Boolean =
+    //NB: Für offene Stiche ist das *nicht* das Gleiche wie !Stich.hatBedient()!
 
-fun SpielSnapshot.alleGespieltenKarten(): KartenSet =
-        fertigeStiche
-                .fold(KartenSet.empty, {acc, stich -> acc + stich.karten}) +
-                aktuellerStich.karten
+    if (this is FertigerStich) {
+        karteVon(spieler).spielFarbe() != karten[0].spielFarbe()
+    }
+    else {
+        val idx = (spieler.idx - aufspiel.idx + 4) % 4
+        if (idx < karten.size) {
+            karten[idx].spielFarbe() != karten[0].spielFarbe()
+        }
+        else {
+            false
+        }
+    }
 
-fun SpielSnapshot.alleUngespieltenKarten(): KartenSet  = alleKarten() - alleUngespieltenKarten()
 
 fun punkte(karte: Karte): Int = when(karte.wert) {
     Wert.Neun -> 0

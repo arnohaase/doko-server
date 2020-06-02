@@ -17,7 +17,7 @@ class KartenSetTest {
     @Test
     fun testPlusMinus() {
         var ks = KartenSet.empty
-        assertEquals(0, ks.size())
+        assertEquals(0, ks.size)
 
         ks += KaroAs
         ks += HerzZehn

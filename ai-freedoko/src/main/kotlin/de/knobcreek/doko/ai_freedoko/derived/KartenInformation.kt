@@ -12,133 +12,29 @@ import java.util.*
  * @author arno
  */
 
+class KartenInformation(val spiel: SpielSnapshot) {
 
-/**
- * ermittelt auf Basis des aktuellen Snapshots gesicherte Informationen zur Verteilung der verbleibenden Karten
- */
-class KartenConstraints(private val spiel: SpielSnapshot) {
-    val anzahlKarten: Map<Spieler, Int> by lazy {
-        val result = HashMap<Spieler, Int>()
+//    fun anzahlAufgespielt(farbe: SpielFarbe): Int = spiel.fertigeStiche.count { s -> spiel.farbe(s) == farbe } // color_runs
+//
+//    val anzahlFarbstiche: Int by lazy { spiel.fertigeStiche.size - anzahlAufgespielt(SpielFarbe.Trumpf) }
+//    val anzahlTrumpfstiche: Int by lazy { anzahlAufgespielt(SpielFarbe.Trumpf) } // trump_runs
+//
+//    val anzahlSpielerMitUnbekanntenKarten: Int by lazy { TODO() } // remaining_unknown_players
 
-        val basisAnzahl = -spiel.fertigeStiche.size + if (spiel.variante.mitNeunen) 12 else 10
-        var s = spiel.aktuellerStich.aufspiel
-        for (i in 0..4) {
-            val anzahl = basisAnzahl + if (i < spiel.aktuellerStich.karten.size) 0 else 1
-            result.put(s, anzahl)
-            s = s.nächster()
-        }
-
-        result
-    }
-
-    /**
-     * Die Liste aller Karten, die ein Spieler sicher hat. Diese Liste enthält im Allgemeinen weniger Karten, als der
-     *  Spieler tatsächlich hat
-     */
-    val sichereKarten: Map<Spieler, KartenSet> by lazy {
-        val result = HashMap<Spieler, KartenSet>()
-
-        fun alleSicherenKarten() = result.values.reduce { a,b -> a+b }
-
-        TODO()
-
-        result
-    }
-
-    //TODO Wechselwirkung
-
-
-    /**
-     * Die Liste aller Karten, die ein Spieler möglicherweise haben kann. Diese Liste enthält im Allgemeinen mehr
-     *  Karten, als der Spieler tatsächlich hat
-     */
-    val möglicheKarten: Map<Spieler, KartenSet> by lazy {
-        val result = HashMap<Spieler, KartenSet>()
-
-        // Ausgangspunkt: Ich kenne meine eigene Hand, jeder andere kann jede der übrigen Karten haben
-
-        for (s in Spieler.values()) {
-            result.put(s, spiel.alleUngespieltenKarten() - spiel.meineHand())
-        }
-
-        result.put(spiel.werBinIch, spiel.meineHand())
-
-        for (spieler in Spieler.values()) {
-            var karten = result.get(spieler)!!
-
-            // nicht bedienter Stich bedeutet, dass der Spieler auf einer Farbe blank ist
-            for (stich in spiel.fertigeStiche) {
-                if (stich.hatNichtBedient(spieler, spiel.spielregel())) {
-                    karten = karten.filter{ k -> spiel.spielregel().farbe(k) != spiel.farbe(stich)!! }
-                }
-            }
-
-            if (spiel.aktuellerStich.hatNichtBedient(spieler, spiel.spielregel())) {
-                karten = karten.filter{ k -> spiel.spielregel().farbe(k) != spiel.farbe(spiel.aktuellerStich)!! }
-            }
-
-            if(spiel.vorbehalt == null) {
-                // Contra angesagt ==> "keine Kreuz Dame"
-                for (aktion in spiel.journal) {
-                    if (aktion.first == spieler && aktion.second is Contra) {
-                        karten = karten.filter { k -> k != KreuzDame }
-                    }
-                }
-
-                // Wenn beide Re-Spieler (mir) bekannt sind, können die anderen Spieler keine Kreuz-Damen haben
-                var reSpieler: Set<Spieler> = HashSet<Spieler>()
-                if(spiel.meineHand().contains(KreuzDame)) {
-                    reSpieler = reSpieler + spiel.werBinIch
-                }
-
-                for (aktion in spiel.journal) {
-                    if (aktion.second is Re) {
-                        reSpieler = reSpieler + aktion.first
-                    }
-                }
-
-                if (reSpieler.size == 2 && !reSpieler.contains(spieler)) {
-                    karten = karten.filter { k -> k != KreuzDame }
-                }
-
-            }
-            else if (spiel.vorbehalt!!.second is Hochzeit && spiel.vorbehalt!!.first != spieler) {
-                karten = karten.filter { k -> k != KreuzDame }
-            }
-
-            result.put(spieler, karten)
-        }
-
-        result
-    }
-}
-
-
-
-
-class _KartenInformation(val spiel: SpielSnapshot) {
-
-    fun anzahlAufgespielt(farbe: SpielFarbe): Int = spiel.fertigeStiche.count { s -> spiel.farbe(s) == farbe } // color_runs
-
-    val anzahlFarbstiche: Int by lazy { spiel.fertigeStiche.size - anzahlAufgespielt(SpielFarbe.Trumpf) }
-    val anzahlTrumpfstiche: Int by lazy { anzahlAufgespielt(SpielFarbe.Trumpf) } // trump_runs
-
-    val anzahlSpielerMitUnbekanntenKarten: Int by lazy { TODO() } // remaining_unknown_players
-
-    val verbleibendeKarten: List<Karte> by lazy {
-        val result = spiel.alleKarten().toMutableList()
-        result.removeAll(spiel.alleGespieltenKarten())
-        result
-    }
-    val verbleibendeKartenVonAnderen: List<Karte> by lazy {
-        val result = verbleibendeKarten.toMutableList()
-        result.removeAll(spiel.hand)
-        result
-    }
-
-    val verbleibendeTrümpfe: List<Karte> by lazy {
-        verbleibendeKarten.filter { k -> spiel.spielregel().farbe(k).trumpf }
-    }
+//    val verbleibendeKarten: List<Karte> by lazy {
+//        val result = spiel.alleKarten().toMutableList()
+//        result.removeAll(spiel.alleGespieltenKarten())
+//        result
+//    }
+//    val verbleibendeKartenVonAnderen: List<Karte> by lazy {
+//        val result = verbleibendeKarten.toMutableList()
+//        result.removeAll(spiel.hand)
+//        result
+//    }
+//
+//    val verbleibendeTrümpfe: List<Karte> by lazy {
+//        verbleibendeKarten.filter { k -> spiel.spielregel().farbe(k).trumpf }
+//    }
 //    val höchsterVerbleibenderTrumpf: Karte? by lazy { spiel.spielregel().höchsteKarte(verbleibendeTrümpfe) } // highest_remaining_trump
 //
 //    val verbleibendeTrümpfeVonAnderen: List<Karte> by lazy {
