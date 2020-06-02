@@ -36,16 +36,11 @@ enum class Farbe {
     Kreuz, Pik, Herz, Karo
 }
 enum class Wert(val punkte: Int) {
-    Neun(0), Zehn(10), Bube(2), Dame(3), König(4), As(11)
-
-enum class Wert {
-    Neun, Bube, Dame, König, Zehn, As
+    Neun(0), Bube(2), Dame(3), König(4), Zehn(10), As(11)
 }
 data class Karte(val farbe: Farbe, val wert: Wert) {
     val punkte = wert.punkte
 }
-
-data class Karte(val farbe: Farbe, val wert: Wert)
 
 enum class Spieler {
     Eins, Zwei, Drei, Vier;
