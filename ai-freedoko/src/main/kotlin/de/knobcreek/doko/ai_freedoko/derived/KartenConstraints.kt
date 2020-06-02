@@ -48,7 +48,7 @@ class KartenConstraints(private val spiel: SpielSnapshot) {
             if (aktion.second is Re) {
                 result.put(spieler, true)
             }
-            if (aktion.second is Contra) {
+            if (aktion.second is Kontra) {
                 result.put(spieler, false)
             }
         }

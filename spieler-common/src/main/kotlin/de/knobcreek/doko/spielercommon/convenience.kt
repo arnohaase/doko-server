@@ -91,7 +91,7 @@ fun Karte.isTrumpf() = spielFarbe() == SpielFarbe.Trumpf
 
 fun Karte.isSpeziell() = this == HerzZehn //TODO oder Schweinchen oder mögliches Schweinchen oder Hyperschweinchen oder mögliches Hyperschweinchen
 
-fun FertigerStich.karteVon(spieler: Spieler): Karte = karten[(spieler.idx - aufspiel.idx + 4) % 4]
+fun FertigerStich.karteVon(spieler: Spieler): Karte = karten[(spieler.ordinal - aufspiel.ordinal + 4) % 4]
 
 fun Stich.farbe(): SpielFarbe? =
         if (karten.isNotEmpty()) {
@@ -108,7 +108,7 @@ fun Stich.hatNichtBedient(spieler: Spieler): Boolean =
         karteVon(spieler).spielFarbe() != karten[0].spielFarbe()
     }
     else {
-        val idx = (spieler.idx - aufspiel.idx + 4) % 4
+        val idx = (spieler.ordinal - aufspiel.ordinal + 4) % 4
         if (idx < karten.size) {
             karten[idx].spielFarbe() != karten[0].spielFarbe()
         }
