@@ -29,8 +29,16 @@ export interface KarteGespieltModel extends SpielerAktionModel {
 	karte: KartenId
 }
 
-
 export interface SpielModel {
+	haende: KartenSetModel[]
 	journal: SpielerAktionModel[]
 	stiche: StichModel[]
+}
+
+export interface LaufendesSpielModel {
+	aktStichAnzGespielt: number
+	aktStich: StichModel
+
+	haende: KartenSetModel[]
+	abgelegteStiche: StichModel[]
 }

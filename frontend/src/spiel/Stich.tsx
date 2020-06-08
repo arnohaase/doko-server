@@ -12,8 +12,8 @@ interface State {
 
 export default class Stich extends React.Component<Props, State> {
 
-  private classNameFor(idx: number) {
-    return 'stich-spieler-' + (this.props.stich.ersterSpieler + idx) % 4;
+  private spieler(idx: number) {
+    return (this.props.stich.ersterSpieler + idx) % 4;
   }
 
   render() {
@@ -22,8 +22,8 @@ export default class Stich extends React.Component<Props, State> {
     for (let i=0; i<this.props.anzahlGespielt; i++) {
       karten.push(
           <div key={i} className={'stich-spieler'}>
-            <div key={i} className={this.classNameFor(i)}>
-              <Karte kartenId={this.props.stich.karten[i]} />
+            <div key={i} className={'stich-spieler-' + this.spieler(i)}>
+              <Karte kartenId={this.props.stich.karten[i]} index={this.spieler(i)}/>
             </div>
           </div>
       );

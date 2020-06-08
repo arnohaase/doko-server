@@ -1,41 +1,108 @@
-.karte {
-	max-height: 100%;
-	max-width: 100%;
+.kartenhand {
+	position: relative;
+	height: 45%
 }
 
-.kartenhand {
+.kartenhand .karte {
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+.kartenhand .karte-0 {
+}
+.kartenhand .karte-1 {
+	transform: translateX(14%);
+}
+.kartenhand .karte-2 {
+	transform: translateX(28%);
+}
+.kartenhand .karte-3 {
+	transform: translateX(42%);
+}
+.kartenhand .karte-4 {
+	transform: translateX(56%);
+}
+.kartenhand .karte-5 {
+	transform: translateX(70%);
+}
+.kartenhand .karte-6 {
+	transform: translateX(84%);
+}
+.kartenhand .karte-7 {
+	transform: translateX(98%);
+}
+.kartenhand .karte-8 {
+	transform: translateX(112%);
+}
+.kartenhand .karte-9 {
+	transform: translateX(126%);
+}
+.kartenhand .karte-10 {
+	transform: translateX(140%);
+}
+.kartenhand .karte-11 {
+	transform: translateX(154%);
 }
 
 .ablagestapel {
-	float: right;
+	position: absolute;
+	height: 100%;
+	right: 0;
 	width: 40%;
-	margin-right: -25%;
 	display: flex;
 	flex-direction: column;
 }
 
 .ablagestich {
 	width: 100%;
+
+}
+.ablagestich-0 {
+}
+.ablagestich-1 {
+	transform: translateY(25%);
 }
 
 .ablagestich-karte {
-	float: left;
+	position: absolute;
+	right: 0;
 	width: 25%;
 }
 
+.ablagestich .karte {
+	max-width: 100%;
+}
+.ablagestapel .karte-0 {
+	transform: translateX(-75%);
+}
+.ablagestapel .karte-1 {
+	transform: translateX(-50%);
+}
+.ablagestapel .karte-2 {
+	transform: translateX(-25%);
+}
+.ablagestapel .karte-3 {
+}
+
+.ablagestich-1 .ablagestich-karte {
+	transform: translateY(25%);
+}
+
 .spieler {
+	height: 100%;
 	border: 1px solid gray;
 }
 
 .stich {
-	/*todo*/
-	height: 200px;
+	height: 30%;
+	width: 30%;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
 
-	position: relative;
 	border: solid 1px red;
-	display: flex;
-	justify-content: center;
-	align-content: center;
 }
 .stich-spieler {
 	height: 45%;
@@ -46,17 +113,57 @@
 }
 .stich-spieler-0 {
 	height: 100%;
-	transform: translateX(-50%);
+	transform: translateX(-45%);
 }
 .stich-spieler-1 {
 	height: 100%;
-	transform: translateY(-50%);
+	transform: translate(-3%, -45%);
 }
 .stich-spieler-2 {
 	height: 100%;
-	transform: translateX(50%);
+	transform: translateX(45%);
 }
 .stich-spieler-3 {
 	height: 100%;
-	transform: translateY(50%);
+	transform: translate(3%, 45%);
+}
+
+.stich .karte {
+	height: 100%;
+}
+
+.tisch {
+	height: 1000px; /*TODO*/
+	position: relative;
+	border: 1px solid lawngreen;
+	background: cornsilk;
+}
+
+.tisch-spieler {
+	height: 30%;
+	width: 30%;
+}
+.tisch-spieler-0 {
+	position: absolute;
+	left: 0;
+	top: 50%;
+	transform: translateY(-50%);
+}
+.tisch-spieler-1 {
+	position: absolute;
+	left: 50%;
+	top: 0;
+	transform: translateX(-50%);
+}
+.tisch-spieler-2 {
+	position: absolute;
+	right: 0;
+	top: 50%;
+	transform: translateY(-50%);
+}
+.tisch-spieler-3 {
+	position: absolute;
+	left: 50%;
+	bottom: 0;
+	transform: translateX(-50%);
 }
