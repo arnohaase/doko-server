@@ -1,5 +1,4 @@
 import React from 'react';
-import './Karte.css'
 
 interface Props {
   kartenId: string

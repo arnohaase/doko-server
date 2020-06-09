@@ -20,7 +20,7 @@ export default class Tisch extends React.Component<Props, State> {
 
       spieler.push(
           <div className={'tisch-spieler tisch-spieler-' + i} key={i}>
-            <Spieler karten={this.props.spiel.haende[i]} stiche={stiche} />
+            <Spieler karten={this.props.spiel.haende[i]} stiche={stiche} spielerId={i}/>
           </div>
       );
     }
