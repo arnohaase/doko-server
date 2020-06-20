@@ -1,0 +1,14 @@
+
+
+
+
+links
+-----
+* ML Tutorial: https://www.youtube.com/watch?v=IHZwWFHWa-w&feature=youtu.be
+* NL & DL Book: http://neuralnetworksanddeeplearning.com/
+* https://towardsdatascience.com/how-to-teach-an-ai-to-play-games-deep-reinforcement-learning-28f9b920440a
+
+* https://www.mi.fu-berlin.de/inf/groups/ag-ki/Theses/Completed-theses/Bachelor-theses/2017/Obenaus/index.html
+* https://www.mi.fu-berlin.de/inf/groups/ag-ki/Theses/Completed-theses/Bachelor-theses/2017/Obenaus/BA-Obenaus.pdf
+
+* DQN, imperfect information games, sparse reward

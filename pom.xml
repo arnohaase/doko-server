@@ -14,6 +14,8 @@
     </parent>
 
     <modules>
+        <module>ai-dl4j</module>
+        <module>ai-uct</module>
         <module>ai-freedoko</module>
         <module>core</module>
         <module>spieler-common</module>
@@ -22,7 +24,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>11</java.version>
+        <java.version>14</java.version>
         <kotlin.version>1.3.72</kotlin.version>
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     </properties>
@@ -57,7 +59,7 @@
                     <version>${kotlin.version}</version>
 
                     <configuration>
-                        <jvmTarget>11</jvmTarget>
+                        <jvmTarget>14</jvmTarget>
                     </configuration>
 
                     <executions>
